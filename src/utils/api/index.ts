@@ -1,5 +1,5 @@
-// api/index.ts
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+
+import type { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
 import { 
     getToken, 
     getSessionId, 
@@ -7,6 +7,14 @@ import {
     setToken,
     setRefreshToken 
 } from '../helpers/storage';
+import axios from 'axios';
+
+// Extend AxiosRequestConfig to include metadata
+declare module 'axios' {
+    export interface AxiosRequestConfig {
+        metadata?: { retryCount: number };
+    }
+}
 
 // Base URL configuration
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
@@ -66,15 +74,15 @@ apiClient.interceptors.response.use(
                 // Attempt to refresh token
                 const refreshResponse = await refreshTokenRequest();
                 
-                if (refreshResponse.success && refreshResponse.data) {
+                if (refreshResponse.data && refreshResponse.data.success && refreshResponse.data.data) {
                     // Update tokens
-                    setToken(refreshResponse.data.accessToken);
-                    if (refreshResponse.data.refreshToken) {
-                        setRefreshToken(refreshResponse.data.refreshToken);
+                    setToken(refreshResponse.data.data.accessToken);
+                    if (refreshResponse.data.data.refreshToken) {
+                        setRefreshToken(refreshResponse.data.data.refreshToken);
                     }
                     
                     // Retry original request with new token
-                    originalRequest.headers['Authorization'] = `Bearer ${refreshResponse.data.accessToken}`;
+                    originalRequest.headers['Authorization'] = `Bearer ${refreshResponse.data.data.accessToken}`;
                     return apiClient(originalRequest);
                 }
             } catch (refreshError) {
