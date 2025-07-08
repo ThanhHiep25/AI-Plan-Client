@@ -123,7 +123,7 @@ export const authApi = {
         try {
             const response = await api.get('/auth/verify');
             return response.data;
-        } catch (error) {
+        } catch {
             return { valid: false };
         }
     },
