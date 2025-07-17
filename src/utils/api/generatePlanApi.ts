@@ -62,6 +62,51 @@ export const generatePlan = async (input: string): Promise<ApiResponse> => {
     }
 };
 
+// Helper function để parse timeline thành số ngày
+const parseTimelineToDays = (timeline: string): number => {
+    const lowerTimeline = timeline.toLowerCase();
+    const match = lowerTimeline.match(/(\d+)\s*(ngày|tuần|tháng|day|week|month)s?/);
+    if (match) {
+        const value = parseInt(match[1]);
+        const unit = match[2];
+        switch (unit) {
+            case 'ngày':
+            case 'day': 
+                return value;
+            case 'tuần':
+            case 'week': 
+                return value * 7;
+            case 'tháng':
+            case 'month': 
+                return value * 30;
+            default: 
+                return 7;
+        }
+    }
+    return 7;
+};
+
+// Helper function để detect category từ nội dung
+const detectCategory = (title: string, objective: string, prompt: string): 'personal' | 'work' | 'education' | 'health' | 'finance' | 'travel' | 'other' => {
+    const content = `${title} ${objective} ${prompt}`.toLowerCase();
+    
+    if (content.includes('marketing') || content.includes('business') || content.includes('work') || content.includes('project') || content.includes('công việc') || content.includes('dự án')) {
+        return 'work';
+    } else if (content.includes('study') || content.includes('education') || content.includes('learn') || content.includes('học') || content.includes('giáo dục')) {
+        return 'education';
+    } else if (content.includes('health') || content.includes('fitness') || content.includes('exercise') || content.includes('sức khỏe') || content.includes('thể dục')) {
+        return 'health';
+    } else if (content.includes('finance') || content.includes('money') || content.includes('budget') || content.includes('tài chính') || content.includes('tiền')) {
+        return 'finance';
+    } else if (content.includes('travel') || content.includes('trip') || content.includes('vacation') || content.includes('du lịch') || content.includes('nghỉ')) {
+        return 'travel';
+    } else if (content.includes('cá nhân') || content.includes('personal') || content.includes('bản thân')) {
+        return 'personal';
+    }
+    
+    return 'other';
+};
+
 export const savePlan = async (
     planData: PlanData,
     originalInput: string
@@ -69,16 +114,77 @@ export const savePlan = async (
     try {
         console.log('💾 Saving plan:', planData.title);
 
-        const response = await api.post('/plans/save-ai-plan', {
-            planData,
-            metadata: {
-                originalInput,
-                generatedAt: new Date().toISOString(),
-            },
+        // Tính toán tổng thời gian thực hiện và tạo tasks
+        let totalDays = 0;
+        const tasks = planData.steps?.map((step: Step, index: number) => {
+            const stepDays = parseTimelineToDays(step.timeline);
+            const startDay = totalDays;
+            totalDays += stepDays;
+            
+            return {
+                id: `step-${index + 1}`,
+                title: step.description,
+                description: `Thời gian: ${step.timeline} | Tài nguyên: ${step.resources}`,
+                status: 'todo' as const,
+                priority: 'medium' as const,
+                dueDate: new Date(Date.now() + totalDays * 24 * 60 * 60 * 1000).toISOString(),
+                estimatedTime: stepDays * 8, // 8 giờ/ngày
+                tags: ['ai-generated', 'step']
+            };
+        }) || [];
+
+        // Tạo payload theo đúng schema API
+        const planPayload = {
+            // ✅ Required fields
+            title: planData.title || 'Kế hoạch không có tiêu đề',
+            
+            // ✅ Optional basic fields
+            description: planData.objective || '',
+            
+            // ✅ Source identification
+            source: 'ai-generated' as const,
+            
+            // ✅ Basic plan info
+            category: detectCategory(planData.title || '', planData.objective || '', originalInput),
+            priority: 'medium' as const,
+            status: 'draft' as const,
+            
+            // ✅ Dates
+            startDate: new Date().toISOString(),
+            endDate: totalDays > 0 
+                ? new Date(Date.now() + totalDays * 24 * 60 * 60 * 1000).toISOString()
+                : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            
+            // ✅ Tasks array (converted from steps)
+            tasks: tasks,
+            
+            // ✅ Collaborators (empty for AI-generated plans)
+            collaborators: [],
+            
+            // ✅ Additional fields
+            tags: ['ai-generated', 'plan'],
+            isPublic: false,
+            allowComments: true,
+            allowCollaboration: true,
+            
+            // ✅ AI-specific fields
+            aiPrompt: originalInput,
+            aiModel: 'claude-sonnet-4',
+            aiGeneratedAt: new Date().toISOString()
+        };
+
+        console.log('📤 Sending plan payload:', {
+            title: planPayload.title,
+            source: planPayload.source,
+            category: planPayload.category,
+            tasksCount: planPayload.tasks.length
         });
+
+        const response = await api.post('/plans/', planPayload);
 
         console.log('✅ Plan saved successfully');
         return response.data;
+        
     } catch (error: any) {
         console.error('❌ Error saving plan:', error);
 
