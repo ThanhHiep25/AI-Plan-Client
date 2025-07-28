@@ -228,7 +228,7 @@ export const checkTokenExpiry = (): void => {
     const token = getToken();
     if (token && isTokenExpired(token)) {
         console.log('Token expired, clearing storage');
-        clearStorage();
-        window.location.href = '/login';
+        // clearStorage();
+        // window.location.href = '/login';
     }
 };
