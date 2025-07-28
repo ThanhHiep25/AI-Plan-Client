@@ -151,8 +151,8 @@ const MenuBar: React.FC<MenuBarProps> = ({ onTabChange }) => {
                             key={tab.key}
                             onClick={() => handleTabClick(tab.key)}
                             className={`px-4 py-2 font-semibold text-left w-full text-sm transition-colors rounded-sm ${activeTab === tab.key
-                                    ? "bg-gray-500/30 text-white"
-                                    : " text-gray-600 hover:bg-gray-500/30"
+                                ? "bg-gray-500/30 text-white"
+                                : " text-gray-600 hover:bg-gray-500/30"
                                 }`}
                         >
                             {tab.icon} {tab.label}
@@ -168,8 +168,8 @@ const MenuBar: React.FC<MenuBarProps> = ({ onTabChange }) => {
                             key={tab.key}
                             onClick={() => handleTabClick(tab.key)}
                             className={`px-4 py-2 font-semibold text-left w-full text-sm transition-colors rounded-sm ${activeTab === tab.key
-                                    ? "bg-gray-500/30 text-white"
-                                    : " text-gray-600 hover:bg-gray-500/30"
+                                ? "bg-gray-500/30 text-white"
+                                : " text-gray-600 hover:bg-gray-500/30"
                                 }`}
                         >
                             {tab.icon} {tab.label}
@@ -185,8 +185,8 @@ const MenuBar: React.FC<MenuBarProps> = ({ onTabChange }) => {
                             key={tab.key}
                             onClick={() => handleTabClick(tab.key)}
                             className={`px-4 py-2 font-semibold text-left w-full text-sm transition-colors rounded-sm ${activeTab === tab.key
-                                    ? "bg-gray-500/30 text-white"
-                                    : " text-gray-600 hover:bg-gray-500/30"
+                                ? "bg-gray-500/30 text-white"
+                                : " text-gray-600 hover:bg-gray-500/30"
                                 }`}
                         >
                             {tab.icon} {tab.label}

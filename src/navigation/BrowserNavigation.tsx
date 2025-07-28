@@ -3,6 +3,7 @@ import Home from "../pages/home/home";
 import MenuBar from "../components/menu/MenuBar";
 import InboxPlan from "../pages/inbox/InboxPlan";
 import ProductRoadmap from "../pages/roadMap/roadMap";
+import HistoryPlan from "../pages/hisPlan/historyPlan";
 import GoogleSuccess from "../../src/pages/auth/GoogleSuccess";
 
 
@@ -18,7 +19,7 @@ const BrowserNavigation: React.FC = () => {
                         <Route path="/inbox" element={<InboxPlan />} />
                         <Route path="/product-roadmap" element={<ProductRoadmap/>} />
                         <Route path="/auth/success" element={<GoogleSuccess />} />
-                        <Route path="/his-ai-plan" element={<div>Lịch sử kế hoạch AI</div>} />
+                        <Route path="/his-ai-plan" element={<HistoryPlan />} />
                         <Route path="/stack" element={<div>Công nghệ sử dụng</div>} />
                         <Route path="*" element={<div>404 - Trang không tìm thấy</div>} />
                     </Routes>
